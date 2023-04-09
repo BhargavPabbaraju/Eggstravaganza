@@ -20,23 +20,31 @@ class Game:
 
 
     def draw(self):
-        
-        #self.all_sprites.update()
-        #self.all_sprites.draw(self.window)
         self.bubbles.update()
         self.bubbles.draw(self.window)
+
         self.eggs.update()
         self.eggs.draw(self.window)
+
+        self.arrow.update()
+        self.window.blit(self.arrow.image,self.arrow.rect)
+
         self.shooter.update()
         self.window.blit(self.shooter.image,self.shooter.rect)
 
+        
+
 
     def check_events(self):
-        pass
+        
+        if pg.mouse.get_pressed()[0]:
+            #Mouse clicked
+            print('clicked')
+        
 
     def spawn_eggs(self):
         r = rand(1,100)
-        if r < 2:
+        if r < 5:
             egg = Egg(self)
             self.eggs.add(egg)
             self.currentEggs+=1
@@ -54,6 +62,7 @@ class Game:
             self.window.fill(-1)
             self.draw()
             pg.display.update()
+            self.clock.tick(60)
 
 
 
