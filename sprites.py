@@ -2,15 +2,15 @@
 import pygame as pg
 from random import randint as rand
 from settings import *
-from math import pi,atan2,degrees
+from math import sin,cos
 from pygame.math import Vector2 as vec2
 
 
 class Egg(pg.sprite.Sprite):
     def __init__(self,game):
         super().__init__()
-        self.width = 64
-        self.height = 64
+        self.width = 64-8
+        self.height = 64-8
         self.x = rand(self.width,WIDTH-self.width)
         self.y = -self.height
         self.vel = rand(1,8)/10
@@ -42,7 +42,7 @@ class Egg(pg.sprite.Sprite):
 
 
 class Bubble(pg.sprite.Sprite):
-    def __init__(self,game,pos=None,vec=None):
+    def __init__(self,game,pos=None,vec=None,color=(0,255,0)):
         super().__init__()
         self.width = 64
         self.height = 64
@@ -52,17 +52,35 @@ class Bubble(pg.sprite.Sprite):
         #self.image.fill((rand(0,255),rand(0,255),rand(0,255)))
         self.pos = pos
         self.vec = vec
-        pg.draw.circle(self.image,(0,255,0),(self.width//2,self.height//2),self.width//2)
+        pg.draw.circle(self.image,color,(self.width//2,self.height//2),self.width//2)
 
         self.rect = self.image.get_rect()
-        if not pos:
-            self.rect.x = WIDTH//2
-            self.rect.bottom = HEIGHT-self.height//4 + 8
-        else:
-            self.rect.center = self.pos
+        
+        self.rect.x = WIDTH//2
+        self.rect.bottom = HEIGHT-self.height//4 + 8
+        self.pos = self.rect.center
+        if self.vec:
+            self.rect.x+= self.vec.x*64*2
+            self.rect.y+= self.vec.y*64*2
+        
+        
+            
         #self.rect.y = self.y
         self.game = game
         self.start = pg.time.get_ticks()
+        self.update_thres = 100
+        self.vel = rand(1,20)/10
+    
+    def update(self):
+        now = pg.time.get_ticks()
+        t = (pg.time.get_ticks()-self.start)/200
+        if self.vec:
+            self.rect.x+= self.vec.x*self.vel*t
+            self.rect.y+= self.vec.y*self.vel*t
+          
+        
+        if self.rect.x==WIDTH or self.rect.y == HEIGHT:
+            self.kill()
 
 
 
@@ -93,7 +111,7 @@ class Arrow(pg.sprite.Sprite):
         self.origRect = self.rect
         self.rect.center = self.game.shooter.rect.center
         self.direction = vec2(WIDTH//2,0)
-    
+        self.position = (WIDTH//2,HEIGHT-self.height*2)
 
         
 
@@ -108,4 +126,6 @@ class Arrow(pg.sprite.Sprite):
 
         self.image = pg.transform.rotate(self.origImage,self.angle)
         self.rect = self.image.get_rect(center=self.origRect.center)
-    
+        self.direction = self.direction.normalize()
+        
+

@@ -17,6 +17,8 @@ class Game:
         #self.maxEggs = 100
         self.shooter = Bubble(self)
         self.arrow = Arrow(self)
+        self.last_clicked = pg.time.get_ticks()
+        self.click_thres = 200
 
 
     def draw(self):
@@ -36,11 +38,11 @@ class Game:
 
 
     def check_events(self):
-        
-        if pg.mouse.get_pressed()[0]:
+        now = pg.time.get_ticks()
+        if pg.mouse.get_pressed()[0] and now-self.last_clicked >self.click_thres:
             #Mouse clicked
-            print('clicked')
-        
+            self.bubbles.add(Bubble(self,self.shooter.pos,self.arrow.direction,(rand(1,255),rand(1,255),rand(1,255))))
+            self.last_clicked = now
 
     def spawn_eggs(self):
         r = rand(1,100)
