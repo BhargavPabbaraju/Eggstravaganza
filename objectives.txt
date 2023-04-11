@@ -1,7 +1,7 @@
 
 Bubble Shooter game
 
-- Easter eggs keep falling from the sky
+- Easter eggs keep falling from the sky 
 - Shoot bubbles at the eggs to secure them
 - If bubble shot correctly hits the egg , it secures the egg and increases your score
 - If bubble does not hit anything , it explodes into particles
@@ -11,3 +11,16 @@ Bubble Shooter game
     - If bubble hits a bomb , it explodes violently and all nearby eggs crash
 
 - Power Ups
+
+
+TODO
+
+- Background
+- Life and UI
+
+- Score
+- Particle System
+- Egg Crash
+- More Bubble Graphics 
+- Egg captured correctly
+- Redo Egg Graphics 
