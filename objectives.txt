@@ -15,10 +15,10 @@ Bubble Shooter game
 
 TODO
 
-- Background
-- Life and UI
+- Background //Done
+- Life and UI //Done
 
-- Score
+- Score //Done
 - Particle System
 - Egg Crash
 - More Bubble Graphics 

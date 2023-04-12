@@ -51,9 +51,11 @@ class Egg(pg.sprite.Sprite):
         
     
     def update(self):
+        if not self.game.running:
+            return
         if self.y > HEIGHT - BOUNDARY:
             #Crash egg
-            self.game.currentEggs -=1
+            self.game.lose_life()
             self.kill()
         
       
@@ -179,3 +181,39 @@ class Particle(pg.sprite.Sprite):
     def update(self):
         pass
         
+
+class Text(pg.sprite.Sprite):
+    def __init__(self,game,msg,x,y,size=12,color=(0,0,0),typ=None):
+        super().__init__()
+        self.font = pg.font.Font('./Fonts/PrettyPastel-7K2P.ttf',size)
+        self.image = self.font.render(msg,True,color)
+        self.rect = self.image.get_rect()
+        self.center = (x,y)
+        self.rect.center = self.center
+        self.game = game
+        self.type = typ
+        self.color = color
+
+    
+    def update(self):
+        if self.type == 'score':
+            self.image = self.font.render("Score:%d"%self.game.score,True,self.color)
+            self.rect = self.image.get_rect()
+            self.rect.center = self.center
+
+        
+        #self.image = 
+    
+
+
+class Life(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        
+        if 'life' not in sheets:
+            sheets['life'] = Spritesheet('life.png')
+        
+        self.image = sheets['life'].get_image(0,0,32,32,1)
+        self.rect = self.image.get_rect()
+    
+    

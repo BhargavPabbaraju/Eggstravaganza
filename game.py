@@ -4,7 +4,7 @@ class Game:
     def __init__(self):
         pg.init()
         self.window = pg.display.set_mode((WIDTH,HEIGHT))
-        
+        pg.font.init()
         self.clock = pg.time.Clock()
         self.bg = pg.image.load('./Images/bg.png').convert_alpha()
         self.refresh()
@@ -15,6 +15,7 @@ class Game:
         self.eggs = pg.sprite.Group()
         self.bubbles = pg.sprite.Group()
         self.particles = pg.sprite.Group()
+        self.fonts = pg.sprite.Group()
         self.score = 0
         self.currentEggs =0
         #self.maxEggs = 100
@@ -22,7 +23,34 @@ class Game:
         self.arrow = Arrow(self)
         self.last_clicked = pg.time.get_ticks()
         self.click_thres = 200
+        self.score = 0
+        self.lives = 20
+        self.life = Life()
+        self.finish = False
+    
+
+    def lose_life(self):
+        self.lives=max(0,self.lives-1)
+        if self.lives==0:
+            self.game_over()
+
+    def game_over(self):
+        self.running = False
+        self.finish = True
+        self.fonts.add(Text(self,'GAME OVER',(WIDTH-len('GAME OVER'))//2,(HEIGHT-72)//2,72,(209,177,130)))
         
+        while self.finish:
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+            
+           
+            self.check_events()
+            self.window.fill(1)
+            self.draw()
+            pg.display.update()
+            self.clock.tick(60)
 
 
     def draw(self):
@@ -40,8 +68,24 @@ class Game:
         self.shooter.update()
         self.window.blit(self.shooter.image,self.shooter.rect)
 
-        
+        self.fonts.update()
+        self.fonts.draw(self.window)
 
+        
+        self.draw_lives()
+    
+    def draw_lives(self):
+        x = BOUNDARY//2
+        y = 64
+        for i in range(min(self.lives,10)):
+            self.window.blit(self.life.image,(x,y))
+            y+=64
+        
+        x = WIDTH-BOUNDARY//2
+        y = 64
+        for i in range(max(0,self.lives-10)):
+            self.window.blit(self.life.image,(x,y))
+            y+=64
 
     def check_events(self):
         now = pg.time.get_ticks()
@@ -56,6 +100,7 @@ class Game:
             for egg in hits[bubble]:
             #bubble.kill()
                 egg.kill()
+                self.score+=1
         
         
 
@@ -68,6 +113,9 @@ class Game:
             
 
     def run(self):
+
+        self.fonts.add(Text(self,'Score:999',WIDTH-BOUNDARY//2,32,32,(121,118,153),'score'))
+        
         while self.running:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
