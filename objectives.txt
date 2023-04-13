@@ -24,14 +24,15 @@ TODO
 - Increase Difficulty // Done
 - Egg captured correctly // Done
 - Redo Egg Graphics //Done
+- More Bubble Graphics //Done
+- Audio //Done
+- Intro Scene //Done
 
 
 
 
 
 
-- Audio
-- Intro Scene 
 - Leaderboard
-- More Bubble Graphics 
+
 

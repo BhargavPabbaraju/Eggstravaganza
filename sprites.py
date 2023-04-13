@@ -59,8 +59,10 @@ class Egg(pg.sprite.Sprite):
             return
         if self.y > HEIGHT - BOUNDARY:
             if self.type=='Egg':
+                
                 self.game.generate_particles(self.rect.center,self.r,self.c,'triangle')
                 self.game.lose_life()
+                self.game.sounds['crash'].play()
             self.kill()
         
       
@@ -134,7 +136,9 @@ class Bubble(pg.sprite.Sprite):
           
         
         if self.rect.x<=BOUNDARY or self.rect.x>=WIDTH-BOUNDARY-self.width:
+            
             self.game.generate_particles(self.rect.center,self.r,self.c,'circle')
+            self.game.sounds['pop'].play()
             self.kill()
 
         if self.rect.y<=0 or self.rect.y>=HEIGHT:
