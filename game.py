@@ -122,6 +122,7 @@ class Game:
                     self.lives = max(0,self.lives-1)
                 else:
                     self.score+=1
+                    self.particles.add(CapturedEgg(bubble.image,egg.image,egg.rect.center))
                 bubble.kill()
                 egg.kill()
                 if self.lives==0:
@@ -147,8 +148,8 @@ class Game:
     
 
     def generate_particles(self,pos,r,c,shape):
-        r1 = rand(5,20) if shape!='bomb' else rand(20,50)
-        r2 = rand(2,18) if shape!='bomb' else rand(8,16)
+        r1 = rand(10,50) if shape!='bomb' else rand(20,50)
+        r2 = rand(4,18) if shape!='bomb' else rand(8,16)
 
         for i in range(r1):
             self.particles.add(Particle(pos,r,c,r2,shape))
@@ -156,7 +157,7 @@ class Game:
 
     def run(self):
 
-        self.fonts.add(Text(self,'Score:999',WIDTH-BOUNDARY//2,32,32,(121,118,153),'score'))
+        self.fonts.add(Text(self,'Score:999',WIDTH-BOUNDARY//2,32,48,(121,118,153),'score'))
         
         while self.running:
             for event in pg.event.get():

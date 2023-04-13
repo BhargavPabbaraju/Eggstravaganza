@@ -5,6 +5,8 @@ from settings import *
 from math import sin,cos
 from pygame.math import Vector2 as vec2
 
+from colors import *
+
 
 class Spritesheet:
     def __init__(self,file):
@@ -12,7 +14,7 @@ class Spritesheet:
     
     def get_image(self,r,c,w,h,scale=1):
         surf = pg.Surface((w,h),pg.SRCALPHA)
-        surf.blit(self.sheet,(0,0),[r*w,c*h,w,h])
+        surf.blit(self.sheet,(0,0),[c*w,r*h,w,h])
         if scale!=1:
             surf = pg.transform.scale(surf,scale)
         
@@ -20,50 +22,7 @@ class Spritesheet:
         
 
 sheets={}
-bubbleColors = [[
-    #00
-    [(162,235,242),(121,215,234)],
-    #01
-    [(195,242,162),(130,209,137)],
-    #02
-    [(210,198,250),(167,145,235)],
-]]
 
-eggColors = [[
-    #00
-    [(162,235,242),(121,215,234)],
-    #01
-    [(195,242,162),(130,209,137)],
-    #02
-    [(210,198,250),(167,145,235)],
-],
-[
-    #10
-    [(162,235,242),(121,215,234)],
-    #11
-    [(195,242,162),(130,209,137)],
-    #12
-    [(210,198,250),(167,145,235)],
-],
-[
-    #20
-    [(162,235,242),(121,215,234)],
-    #21
-    [(195,242,162),(130,209,137)],
-    #22
-    [(210,198,250),(167,145,235)],
-],
-[
-    #30
-    [(162,235,242),(121,215,234)],
-    #31
-    [(195,242,162),(130,209,137)],
-    #32
-    [(210,198,250),(167,145,235)],
-],
-]
-
-bombColors = [(154,132,184),(242,229,162),(234,140,121),(144,118,153),(167,145,235)]
 
 class Egg(pg.sprite.Sprite):
     def __init__(self,game,r,c,vel,type='Egg'):
@@ -82,7 +41,7 @@ class Egg(pg.sprite.Sprite):
         self.c = c
         self.game = game
         if self.type=='Egg':
-            self.image = sheets['egg'].get_image(r,c,self.width,self.height)
+            self.image = sheets['egg'].get_image(self.r,self.c,self.width,self.height)
         elif self.type=='Life':
             self.image = pg.transform.scale(self.game.life,(self.width,self.height))
         else:
@@ -161,7 +120,7 @@ class Bubble(pg.sprite.Sprite):
     
     def change_image(self):
         self.r = rand(0,2)
-        self.c = 0
+        self.c = rand(0,2)
         self.image = sheets['bubble'].get_image(self.r,self.c,self.width,self.height)
     
     def update(self):
@@ -240,9 +199,9 @@ class Particle(pg.sprite.Sprite):
         self.update_thres = 100
         self.shape = shape
         if self.shape=='circle':
-            self.color = choice([(255,255,255)]+bubbleColors[c][r])
+            self.color = choice([(255,255,255)]+bubbleColors[r][c])
         if self.shape=='triangle':
-            self.color = choice([(255,255,255)]+eggColors[r][c])
+            self.color = choice(eggColors[r][c])
         
         if shape=='bomb':
             self.color = choice(bombColors)
@@ -291,12 +250,34 @@ class Text(pg.sprite.Sprite):
         self.game = game
         self.type = typ
         self.color = color
+        self.size = size
 
     
     def update(self):
         if self.type == 'score':
+            if self.game.score>999 and self.size>36:
+                self.font = pg.font.Font('./Fonts/PrettyPastel-7K2P.ttf',36)
+                self.size = 36
             self.image = self.font.render("Score:%d"%self.game.score,True,self.color)
             self.rect = self.image.get_rect()
             self.rect.center = self.center
 
  
+
+class CapturedEgg(pg.sprite.Sprite):
+    def __init__(self,bubble,egg,pos):
+        super().__init__()
+        self.image = pg.Surface((64,64),pg.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.alpha = 255
+        self.rect.center = pos
+        self.image.blit(egg,(0,0))
+        self.image.blit(bubble,(0,0))
+        self.speed = 5
+    
+    def update(self):
+        if self.alpha<=0:
+            self.kill()
+        
+        self.alpha-=self.speed
+        self.image.set_alpha(self.alpha)

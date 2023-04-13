@@ -8,7 +8,7 @@ Bubble Shooter game
 - If egg falling doesn't get covered in bubble , it crashes
 
 - Obstacles
-    - If bubble hits a bomb , it explodes violently and all nearby eggs crash
+    - If bubble hits a bomb , it explodes violently
 
 - Power Ups
 
@@ -21,15 +21,17 @@ TODO
 - Particle System // Done
 - Egg Crash //Done
 - Life Power Up //Done
+- Increase Difficulty // Done
+- Egg captured correctly // Done
+- Redo Egg Graphics //Done
 
 
 
 
-- Increase Difficulty
 
-- Egg captured correctly
 
 - Audio
-- Redo Egg Graphics 
+- Intro Scene 
+- Leaderboard
 - More Bubble Graphics 
 
