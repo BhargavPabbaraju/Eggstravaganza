@@ -19,7 +19,7 @@ class Game:
         self.score = 0
         self.currentEggs =0
         #self.maxEggs = 100
-        self.shooter = Bubble(self)
+        self.shooter = Bubble(self,True)
         self.arrow = Arrow(self)
         self.last_clicked = pg.time.get_ticks()
         self.click_thres = 200
@@ -65,6 +65,9 @@ class Game:
         self.bubbles.update()
         self.bubbles.draw(self.window)
 
+        self.particles.update()
+        self.particles.draw(self.window)
+
         self.shooter.update()
         self.window.blit(self.shooter.image,self.shooter.rect)
 
@@ -89,9 +92,14 @@ class Game:
 
     def check_events(self):
         now = pg.time.get_ticks()
+
+        if not self.running:
+            return
         if pg.mouse.get_pressed()[0] and now-self.last_clicked >self.click_thres:
             #Mouse clicked
-            self.bubbles.add(Bubble(self,self.shooter.pos,self.arrow.direction,self.shooter.image))
+            b = Bubble(self)
+            b.make_bubble(self.shooter.r,self.shooter.c,self.shooter.pos,self.arrow.direction,rand(1,20)/10,self.shooter.image)
+            self.bubbles.add(b)
             self.shooter.change_image()
             self.last_clicked = now
         
@@ -107,10 +115,14 @@ class Game:
     def spawn_eggs(self):
         r = rand(1,100)
         if r < 5:
-            egg = Egg(self)
+            egg = Egg(self,rand(0,3),rand(0,2),rand(1,8)/10)
             self.eggs.add(egg)
             self.currentEggs+=1
-            
+    
+
+    def generate_particles(self,pos,r,c,shape):
+        for i in range(rand(5,20)):
+            self.particles.add(Particle(pos,r,c,rand(2,18),shape))
 
     def run(self):
 

@@ -17,10 +17,16 @@ TODO
 
 - Background //Done
 - Life and UI //Done
-
 - Score //Done
-- Particle System
-- Egg Crash
-- More Bubble Graphics 
+- Particle System // Done
+- Egg Crash // Done
+
+
+
+
+- Increase Difficulty
+- Life power up
+- Audio
 - Egg captured correctly
+- More Bubble Graphics 
 - Redo Egg Graphics 

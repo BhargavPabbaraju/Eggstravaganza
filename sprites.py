@@ -1,6 +1,6 @@
 
 import pygame as pg
-from random import randint as rand
+from random import randint as rand,choice
 from settings import *
 from math import sin,cos
 from pygame.math import Vector2 as vec2
@@ -26,11 +26,45 @@ bubbleColors = [[
     #01
     [(195,242,162),(130,209,137)],
     #02
-    [(210,198,250),(167,145,2375)],
+    [(210,198,250),(167,145,235)],
 ]]
 
+eggColors = [[
+    #00
+    [(162,235,242),(121,215,234)],
+    #01
+    [(195,242,162),(130,209,137)],
+    #02
+    [(210,198,250),(167,145,235)],
+],
+[
+    #10
+    [(162,235,242),(121,215,234)],
+    #11
+    [(195,242,162),(130,209,137)],
+    #12
+    [(210,198,250),(167,145,235)],
+],
+[
+    #20
+    [(162,235,242),(121,215,234)],
+    #21
+    [(195,242,162),(130,209,137)],
+    #22
+    [(210,198,250),(167,145,235)],
+],
+[
+    #30
+    [(162,235,242),(121,215,234)],
+    #31
+    [(195,242,162),(130,209,137)],
+    #32
+    [(210,198,250),(167,145,235)],
+],
+]
+
 class Egg(pg.sprite.Sprite):
-    def __init__(self,game):
+    def __init__(self,game,r,c,vel):
         super().__init__()
         if 'egg' not in sheets:
             sheets['egg'] = Spritesheet('eggs.png')
@@ -38,10 +72,12 @@ class Egg(pg.sprite.Sprite):
         self.height = 64-8
         self.x = rand(BOUNDARY+self.width,WIDTH-BOUNDARY-self.width)
         self.y = -self.height
-        self.vel = rand(1,8)/10
+        self.vel = vel 
         #self.image = pg.Surface((self.width,self.height))
         #self.image.fill((rand(0,255),rand(0,255),rand(0,255)))
-        self.image = sheets['egg'].get_image(rand(0,3),rand(0,2),self.width,self.height)
+        self.r = r
+        self.c = c
+        self.image = sheets['egg'].get_image(r,c,self.width,self.height)
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
@@ -54,7 +90,7 @@ class Egg(pg.sprite.Sprite):
         if not self.game.running:
             return
         if self.y > HEIGHT - BOUNDARY:
-            #Crash egg
+            self.game.generate_particles(self.rect.center,self.r,self.c,'triangle')
             self.game.lose_life()
             self.kill()
         
@@ -69,57 +105,71 @@ class Egg(pg.sprite.Sprite):
 
 
 
+
+
 class Bubble(pg.sprite.Sprite):
-    def __init__(self,game,pos=None,vec=None,image=None):
+    def __init__(self,game,shooter=False):
         super().__init__()
         self.width = 64
         self.height = 64
-       
-
+        self.game = game
         self.image = pg.Surface((self.width,self.height),pg.SRCALPHA)
         if 'bubble' not in sheets:
             sheets['bubble'] = Spritesheet('bubbles.png')
-
-        if image:
-            self.image = image
-        else:
-            self.change_image()
-        #self.image.fill((rand(0,255),rand(0,255),rand(0,255)))
-        self.pos = pos
-        self.vec = vec
-        #pg.draw.circle(self.image,color,(self.width//2,self.height//2),self.width//2)
-
-        self.rect = self.image.get_rect()
+        self.change_image()
         
+        self.rect = self.image.get_rect()
         self.rect.x = WIDTH//2
         self.rect.bottom = HEIGHT-self.height//4 + 8
         self.pos = self.rect.center
-        if self.vec:
-            self.rect.x+= self.vec.x*64*2 +16
-            self.rect.y+= self.vec.y*64*2 +16
+        
+        self.start = pg.time.get_ticks()
+        self.update_thres = 100
+        self.shooter = shooter
+    
+    def make_bubble(self,r,c,pos,vec,vel,image):
+        self.r = r
+        self.c = c
+        self.image = image
+        self.pos = pos
+        self.vec = vec
+
+        self.rect = self.image.get_rect()
+        self.rect.x = WIDTH//2
+        self.rect.bottom = HEIGHT-self.height//4 + 8
+        
+        self.rect.x+= self.vec.x*64*2 +16
+        self.rect.y+= self.vec.y*64*2 +16
         
         
             
         #self.rect.y = self.y
-        self.game = game
-        self.start = pg.time.get_ticks()
-        self.update_thres = 100
-        self.vel = rand(1,20)/10
+       
+        
+        self.vel = vel
+        
     
     def change_image(self):
-        self.image = sheets['bubble'].get_image(rand(0,2),0,self.width,self.height)
+        self.r = rand(0,2)
+        self.c = 0
+        self.image = sheets['bubble'].get_image(self.r,self.c,self.width,self.height)
     
     def update(self):
         now = pg.time.get_ticks()
         t = (pg.time.get_ticks()-self.start)/200
-        if self.vec:
-            self.rect.x+= self.vec.x*self.vel*t
-            self.rect.y+= self.vec.y*self.vel*t
+        if self.shooter:
+            return 
+        
+        self.rect.x+= self.vec.x*self.vel*t
+        self.rect.y+= self.vec.y*self.vel*t
           
         
-        if self.rect.x<=BOUNDARY or self.rect.y <= 0 or self.rect.x>=WIDTH-BOUNDARY or self.rect.y>=HEIGHT:
+        if self.rect.x<=BOUNDARY or self.rect.x>=WIDTH-BOUNDARY-self.width:
+            self.game.generate_particles(self.rect.center,self.r,self.c,'circle')
             self.kill()
 
+        if self.rect.y<=0 or self.rect.y>=HEIGHT:
+            self.kill()
 
 
 class Arrow(pg.sprite.Sprite):
@@ -137,7 +187,9 @@ class Arrow(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         
 
-        pg.draw.line(self.image,(255,0,0),(self.width//2,0),(self.width//2,self.height//3),width=4)
+        pg.draw.line(self.image,(209,130,143),(self.width//2,0),(self.width//2,self.height//3),width=4)
+        pg.draw.line(self.image,(209,130,143),(self.width//2,0),(self.width//2-16,16),width=6)
+        pg.draw.line(self.image,(209,130,143),(self.width//2,0),(self.width//2+16,16),width=6)
         #self.rect.y = self.y
         self.game = game
         self.start = self.rect.center
@@ -169,17 +221,50 @@ class Arrow(pg.sprite.Sprite):
 
 
 class Particle(pg.sprite.Sprite):
-    def __init__(self,pos,radius=rand(2,64),color=(rand(0,255),rand(0,255),rand(0,255))):
+    def __init__(self,pos,r,c,radius,shape):
         super().__init__()
         self.radius = radius
-        self.image = pg.Surface((self.radius*2,self.radius*2),pg.SRCALPHA)
-        pg.draw.circle(self.image,color,(0,0),self.radius)
         self.pos = pos
-        self.vec = vec2()
+        self.vec = vec2(rand(0,20)/10-1,rand(0,20)/10-1)
+        self.last_update = pg.time.get_ticks()
+        self.update_thres = 100
+        self.shape = shape
+        if self.shape=='circle':
+            self.color = choice([(255,255,255)]+bubbleColors[c][r])
+        if self.shape=='triangle':
+            self.color = choice([(255,255,255)]+eggColors[r][c])
+        
+
+        self.points = choice([[(0,self.radius*2),(self.radius*2,self.radius*2),(self.radius,self.radius)],#straight
+                       [(0,0),(self.radius*2,0),(self.radius,self.radius)],#upside down
+                       [(0,0),(0,self.radius*2),(self.radius,self.radius)],#right pointing
+                       [(self.radius*2,0),(self.radius*2,self.radius*2),(0,self.radius)],#left pointing
+                       ])
+        self.update_image()
+        
     
+    def update_image(self):
+        self.image = pg.Surface((self.radius*2,self.radius*2),pg.SRCALPHA)
+        if self.shape=='circle':
+            pg.draw.circle(self.image,self.color,(self.radius,self.radius),self.radius)
+        else:
+            pg.draw.polygon(self.image,self.color,self.points)
+        self.rect = self.image.get_rect()
+        self.rect.center = [int(self.pos[0]),int(self.pos[1])]
+
+
 
     def update(self):
-        pass
+        self.radius -=0.1
+        if self.radius<=0:
+            self.kill()
+        
+        self.pos+=self.vec
+        self.vec+=vec2(rand(-3,3)/10,rand(-3,3)/10)
+    
+        self.update_image()
+        
+        
         
 
 class Text(pg.sprite.Sprite):
