@@ -63,9 +63,12 @@ eggColors = [[
 ],
 ]
 
+bombColors = [(154,132,184),(242,229,162),(234,140,121),(144,118,153),(167,145,235)]
+
 class Egg(pg.sprite.Sprite):
-    def __init__(self,game,r,c,vel):
+    def __init__(self,game,r,c,vel,type='Egg'):
         super().__init__()
+        self.type = type
         if 'egg' not in sheets:
             sheets['egg'] = Spritesheet('eggs.png')
         self.width = 64-8
@@ -77,11 +80,17 @@ class Egg(pg.sprite.Sprite):
         #self.image.fill((rand(0,255),rand(0,255),rand(0,255)))
         self.r = r
         self.c = c
-        self.image = sheets['egg'].get_image(r,c,self.width,self.height)
+        self.game = game
+        if self.type=='Egg':
+            self.image = sheets['egg'].get_image(r,c,self.width,self.height)
+        elif self.type=='Life':
+            self.image = pg.transform.scale(self.game.life,(self.width,self.height))
+        else:
+            self.image = pg.transform.scale(self.game.bomb,(self.width,self.height))
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
-        self.game = game
+        
         self.start = pg.time.get_ticks()
 
         
@@ -90,8 +99,9 @@ class Egg(pg.sprite.Sprite):
         if not self.game.running:
             return
         if self.y > HEIGHT - BOUNDARY:
-            self.game.generate_particles(self.rect.center,self.r,self.c,'triangle')
-            self.game.lose_life()
+            if self.type=='Egg':
+                self.game.generate_particles(self.rect.center,self.r,self.c,'triangle')
+                self.game.lose_life()
             self.kill()
         
       
@@ -234,6 +244,9 @@ class Particle(pg.sprite.Sprite):
         if self.shape=='triangle':
             self.color = choice([(255,255,255)]+eggColors[r][c])
         
+        if shape=='bomb':
+            self.color = choice(bombColors)
+            self.shape = choice(['circle','triangle'])
 
         self.points = choice([[(0,self.radius*2),(self.radius*2,self.radius*2),(self.radius,self.radius)],#straight
                        [(0,0),(self.radius*2,0),(self.radius,self.radius)],#upside down
@@ -286,19 +299,4 @@ class Text(pg.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.center = self.center
 
-        
-        #self.image = 
-    
-
-
-class Life(pg.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        
-        if 'life' not in sheets:
-            sheets['life'] = Spritesheet('life.png')
-        
-        self.image = sheets['life'].get_image(0,0,32,32,1)
-        self.rect = self.image.get_rect()
-    
-    
+ 

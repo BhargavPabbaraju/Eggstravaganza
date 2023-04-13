@@ -1,11 +1,20 @@
 from sprites import *
-
+from math import log10
 class Game:
     def __init__(self):
         pg.init()
         self.window = pg.display.set_mode((WIDTH,HEIGHT))
         pg.font.init()
         self.clock = pg.time.Clock()
+        
+        self.weights=[]
+        probs={5:8,6:4,7:5,8:4,9:2,10:5,11:3,12:2,13:2,14:1,15:2,90:1}
+        for p in probs:
+            for i in range(probs[p]):
+                self.weights.append(p)
+       
+        self.life = pg.image.load('./Images/life.png').convert_alpha()
+        self.bomb = pg.image.load('./Images/bomb.png').convert_alpha()
         self.bg = pg.image.load('./Images/bg.png').convert_alpha()
         self.refresh()
 
@@ -16,17 +25,14 @@ class Game:
         self.bubbles = pg.sprite.Group()
         self.particles = pg.sprite.Group()
         self.fonts = pg.sprite.Group()
-        self.score = 0
-        self.currentEggs =0
-        #self.maxEggs = 100
         self.shooter = Bubble(self,True)
         self.arrow = Arrow(self)
         self.last_clicked = pg.time.get_ticks()
-        self.click_thres = 200
+        self.click_thres = 100
         self.score = 0
         self.lives = 20
-        self.life = Life()
         self.finish = False
+        self.start = pg.time.get_ticks()
     
 
     def lose_life(self):
@@ -37,7 +43,8 @@ class Game:
     def game_over(self):
         self.running = False
         self.finish = True
-        self.fonts.add(Text(self,'GAME OVER',(WIDTH-len('GAME OVER'))//2,(HEIGHT-72)//2,72,(209,177,130)))
+        self.fonts.add(Text(self,'GAME OVER',(WIDTH-len('GAME OVER'))//2,(HEIGHT-72)//2-64,72,(209,177,130)))
+        self.fonts.add(Text(self,'Press a key to play again',(WIDTH-len('Press a key to play again'))//2,(HEIGHT-72)//2,36,(209,177,130)))
         
         while self.finish:
             for event in pg.event.get():
@@ -45,8 +52,12 @@ class Game:
                     pg.quit()
                     quit()
             
-           
-            self.check_events()
+                if event.type == pg.KEYDOWN:
+                    self.finish = False
+                    self.running = True
+                    self.refresh()
+                    self.run()
+        
             self.window.fill(1)
             self.draw()
             pg.display.update()
@@ -81,24 +92,22 @@ class Game:
         x = BOUNDARY//2
         y = 64
         for i in range(min(self.lives,10)):
-            self.window.blit(self.life.image,(x,y))
+            self.window.blit(self.life,(x,y))
             y+=64
         
         x = WIDTH-BOUNDARY//2
         y = 64
         for i in range(max(0,self.lives-10)):
-            self.window.blit(self.life.image,(x,y))
+            self.window.blit(self.life,(x,y))
             y+=64
 
     def check_events(self):
         now = pg.time.get_ticks()
 
-        if not self.running:
-            return
         if pg.mouse.get_pressed()[0] and now-self.last_clicked >self.click_thres:
             #Mouse clicked
             b = Bubble(self)
-            b.make_bubble(self.shooter.r,self.shooter.c,self.shooter.pos,self.arrow.direction,rand(1,20)/10,self.shooter.image)
+            b.make_bubble(self.shooter.r,self.shooter.c,self.shooter.pos,self.arrow.direction,rand(7,20)/10,self.shooter.image)
             self.bubbles.add(b)
             self.shooter.change_image()
             self.last_clicked = now
@@ -106,23 +115,44 @@ class Game:
         hits = pg.sprite.groupcollide(self.bubbles,self.eggs,False,False)
         for bubble in hits:
             for egg in hits[bubble]:
-            #bubble.kill()
+                if egg.type == 'Life':
+                    self.lives = min(self.lives+1,20)
+                elif egg.type == 'Bomb':
+                    self.generate_particles(egg.rect.center,0,0,'bomb')
+                    self.lives = max(0,self.lives-1)
+                else:
+                    self.score+=1
+                bubble.kill()
                 egg.kill()
-                self.score+=1
+                if self.lives==0:
+                    self.game_over()
+                
         
         
 
     def spawn_eggs(self):
-        r = rand(1,100)
-        if r < 5:
+        r = rand(0,100)
+        
+        if r<choice(self.weights):
             egg = Egg(self,rand(0,3),rand(0,2),rand(1,8)/10)
             self.eggs.add(egg)
-            self.currentEggs+=1
+        
+        now = pg.time.get_ticks()
+
+        if r<2 and now-self.start>2000:
+            self.start = now
+            self.eggs.add(Egg(self,rand(0,3),rand(0,2),rand(1,8)/10,choice(['Life','Bomb'])))
+        
+        
     
 
     def generate_particles(self,pos,r,c,shape):
-        for i in range(rand(5,20)):
-            self.particles.add(Particle(pos,r,c,rand(2,18),shape))
+        r1 = rand(5,20) if shape!='bomb' else rand(20,50)
+        r2 = rand(2,18) if shape!='bomb' else rand(8,16)
+
+        for i in range(r1):
+            self.particles.add(Particle(pos,r,c,r2,shape))
+        
 
     def run(self):
 
