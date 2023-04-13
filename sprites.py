@@ -181,7 +181,9 @@ class Arrow(pg.sprite.Sprite):
     
 
     def update(self):
-        
+        if not self.game.running:
+            self.image.set_alpha(0)
+            return
 
         
         self.direction = vec2(pg.mouse.get_pos())-vec2(self.origRect.center)
@@ -255,6 +257,7 @@ class Text(pg.sprite.Sprite):
         self.type = typ
         self.color = color
         self.size = size
+        self.msg = msg
 
     
     def update(self):
@@ -285,3 +288,27 @@ class CapturedEgg(pg.sprite.Sprite):
         
         self.alpha-=self.speed
         self.image.set_alpha(self.alpha)
+
+
+
+class Button(pg.sprite.Sprite):
+    def __init__(self,game,text,pos):
+        super().__init__()
+        self.game = game
+        self.image = self.game.button.copy()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+        self.size = 40
+        self.text = text
+        x=(self.rect.width-len(text))//2
+        
+        y=(self.rect.height-self.size//2)//2
+        self.font = pg.font.Font('./Fonts/PrettyPastel-7K2P.ttf',self.size)
+        fontSurf = self.font.render(self.text,True,(196,148,132))
+        fontRect = fontSurf.get_rect()
+        fontRect.center = (x,y)
+        self.image.blit(fontSurf,fontRect)
+        
+       
+        
+

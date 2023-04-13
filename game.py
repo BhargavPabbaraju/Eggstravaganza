@@ -19,6 +19,7 @@ class Game:
         self.life = pg.image.load('./Images/life.png').convert_alpha()
         self.bomb = pg.image.load('./Images/bomb.png').convert_alpha()
         self.bg = pg.image.load('./Images/bg.png').convert_alpha()
+        self.button = pg.image.load('./Images/button.png').convert_alpha()
         pg.mixer.init()
         self.sounds={
             'pop':pg.mixer.Sound('./Audio/pop.wav'),
@@ -42,12 +43,13 @@ class Game:
         self.bubbles = pg.sprite.Group()
         self.particles = pg.sprite.Group()
         self.fonts = pg.sprite.Group()
+        self.buttons = pg.sprite.Group()
         self.shooter = Bubble(self,True)
         self.arrow = Arrow(self)
         self.last_clicked = pg.time.get_ticks()
         self.click_thres = 100
         self.score = 0
-        self.lives = 20
+        self.lives = 2
         self.finish = False
         self.start = pg.time.get_ticks()
         
@@ -61,8 +63,8 @@ class Game:
 
     def intro_loop(self):
         
-        self.fonts.add(Text(self,self.title,(WIDTH-len(self.title))//2,(HEIGHT-72)//2-64,72,(209,177,130)))
-        self.fonts.add(Text(self,'Press a key to play',(WIDTH-len('Press a key to play'))//2,(HEIGHT-72)//2,36,(209,177,130)))
+        self.fonts.add(Text(self,self.title,(WIDTH-len(self.title))//2,(HEIGHT-96)//2-64,96,(209,177,130)))
+        self.fonts.add(Text(self,'Press a key to play',(WIDTH-len('Press a key to play'))//2,(HEIGHT-72)//2,56,(209,177,130)))
         pg.mixer.music.unload()
         pg.mixer.music.load('./Audio/music 2.wav')
         pg.mixer.music.play(-1)
@@ -91,21 +93,19 @@ class Game:
     def game_over(self):
         self.running = False
         self.finish = True
-        self.fonts.add(Text(self,'GAME OVER',(WIDTH-len('GAME OVER'))//2,(HEIGHT-72)//2-64,72,(209,177,130)))
-        self.fonts.add(Text(self,'Press P to play again',(WIDTH-len('Press a key to play again'))//2,(HEIGHT-72)//2,36,(209,177,130)))
-        
+        self.fonts.add(Text(self,'GAME OVER',(WIDTH-len('GAME OVER'))//2,(HEIGHT-96)//2-64,96,(209,177,130)))
+        self.buttons.empty()
+        y=(HEIGHT - 72)//2 + 32
+        self.buttons.add(Button(self,'Play again',(16,y)))
+        self.buttons.add(Button(self,'Quit',(WIDTH-192-16,y)))
+        self.buttons.add(Button(self,'Leaderboard',((WIDTH-192)//2,y)))
         while self.finish:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
                     quit()
             
-                if event.type == pg.KEYDOWN:
-                    self.finish = False
-                    self.running = True
-                    self.refresh()
-                    self.run()
-        
+            self.check_events()
             self.window.fill(1)
             self.draw()
             pg.display.update()
@@ -133,6 +133,9 @@ class Game:
         self.fonts.update()
         self.fonts.draw(self.window)
 
+        self.buttons.update()
+        self.buttons.draw(self.window)
+
         
         self.draw_lives()
     
@@ -151,6 +154,24 @@ class Game:
 
     def check_events(self):
         now = pg.time.get_ticks()
+
+        if self.finish:
+            if pg.mouse.get_pressed()[0] and now-self.last_clicked >self.click_thres:
+                #Mouse clicked
+                mx,my = pg.mouse.get_pos()
+                for button in self.buttons:
+                    if mx>button.rect.x and mx< button.rect.x+button.rect.width and my>button.rect.y and my<button.rect.y+button.rect.height:
+                        if button.text == 'Quit':
+                            pg.quit()
+                            quit()
+                        elif button.text == 'Play again':
+                            self.finish = False
+                            self.running = True
+                            self.refresh()
+                            self.run()
+                     
+
+            return
 
         if pg.mouse.get_pressed()[0] and now-self.last_clicked >self.click_thres:
             #Mouse clicked
